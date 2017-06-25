@@ -8,20 +8,33 @@
  */
 class SocketServer
 {
-    const HOST = '127.0.0.1';
-    const PORT = '8080';
+    const HOST = '0.0.0.0';
+    const PORT = '5000';
+    const MAX_CLIENT = 10;
 
+    /**
+     * Master Socket, used to detect new connections
+     */
     private $socket;
+
+    /**
+     * array of clients
+     */
+    private $clients;
 
     public function init()
     {
+        // reduce errors output & set max exec time of script to unlimited
         error_reporting(~E_WARNING);
+        set_time_limit (0);
 
-        // Create UPD socket
+        // Create TCP IP socket
         echo 'Creating socket ...' . "\r\n";
-        $socket = socket_create(AF_INET, SOCK_DGRAM, 0);
+        $socket = socket_create(AF_INET, SOCK_STREAM, 0);
         if(!$socket) {
             throw new Exception(socket_last_error($this->socket));
+            echo 'Could not start server, exiting ...' . " \r\n";
+            exit;
         } else {
             $this->socket = $socket;
             echo 'OK!' . "\r\n";
@@ -31,24 +44,85 @@ class SocketServer
         echo 'Binding socket ...' . "\r\n";
         if(!socket_bind($this->socket, self::HOST, self::PORT)) {
             throw new Exception(socket_last_error($this->socket));
+            echo 'Could not bind socket, exiting' . "\r\n";
+            exit;
         } else {
             echo 'OK!' . "\r\n";
         }
+        // set array of clients connections
+        $this->clients = array();
     }
 
     public function listen()
     {
-        while(true) {
-            echo 'Waiting for data ...' . "\r\n";
-
-            //Receive some data
-            $r = socket_recvfrom($this->socket, $buf, 512, 0, $remote_ip, $remote_port);
-            echo "$remote_ip : $remote_port -- " . $buf;
-
-            //Send back the data to the client
-            socket_sendto($this->socket, "OK " . $buf , 100 , 0 , $remote_ip , $remote_port);
+        // set socket to listen, max queued request = 10
+        echo 'Listening ...';
+        if(!socket_listen($this->socket, 10)) {
+            throw new Exception(socket_last_error($this->socket));
+            echo 'Socket could not be set to listening' . "\r\n";
         }
+        echo 'Server is listening !' . "\r\n";
+        echo 'Waiting for connections' . "\r\n";
 
+        while(true) {
+            // set array of readable client SocketServer
+            $read = array();
+            // add master socket as first socket in array
+            $read[] = $this->socket;
+            // add every connected clients
+            foreach($this->clients as $client) {
+                $read[] = $client;
+            }
+            // call select
+            if(socket_select($read, $write, $except, null) === false) {
+                throw new Exception(socket_last_error($this->socket));
+            }
+
+            // check if new incoming connection, this is done by checking
+            // if $read contains the master socket
+            if(in_array($this->socket, $read)) {
+                $newClient = socket_accept($this->socket);
+                // if server accepts more connections
+                if(count($this->clients < self::MAX_CLIENT)) {
+                    $this->clients[] = $newClient;
+                    // Log client informations in terminal
+                    if(socket_getpeername($newClient, $address, $port)) {
+                        echo "Client $address : $port has joined the session. \n";
+                    }
+                    //Send Welcome message to client
+                    $message = "Welcome to ShellChat \n";
+                    socket_write($newClient, $message);
+                    unset($newClient);
+                } else {
+                    // send sorry message and close connection
+                    $message = "Max connections reached, please try later \n";
+                    socket_write($newClient, $message);
+                    socket_close($newClient);
+                }
+            }
+
+            //check each client if they send any data
+            foreach($this->clients as $client) {
+                if (in_array($client, $read)) {
+                    $input = socket_read($client, 1024);
+
+                    if ($input == null) {
+                        //zero length string meaning disconnected, remove and close the socket
+                        socket_close($client);
+                        unset($client);
+                    }
+
+                    $n = trim($input);
+                    $output = "OK ... $input";
+                    echo "Sending output to client \n";
+
+                    //send response to client
+                    foreach($this->clients as $client) {
+                        socket_write($client , $output);
+                    }
+                }
+            }
+        }
     }
 
     public function shutdown()
