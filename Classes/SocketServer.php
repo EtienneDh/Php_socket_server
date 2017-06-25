@@ -108,6 +108,7 @@ class SocketServer
 
                     if ($input == null) {
                         //zero length string meaning disconnected, remove and close the socket
+                        echo 'user logging off' . "\r\n";
                         socket_close($client);
                         unset($client);
                     }
@@ -115,6 +116,7 @@ class SocketServer
                     $n = trim($input);
                     $output = "OK ... $input";
                     echo "Sending output to client \n";
+                    echo $output . "\n";
 
                     //send response to client
                     foreach($this->clients as $client) {
