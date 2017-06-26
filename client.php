@@ -1,5 +1,5 @@
 <?php
-
+//error_reporting(~E_WARNING);
 // $host = '51.254.140.189';
 $host = '127.0.0.1';
 $port = '5000';

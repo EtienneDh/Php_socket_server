@@ -1,7 +1,7 @@
 <?php
 
 /**
- *  Run a server on UDP protocol to easily deal with multiples connections
+ *  Run a server on TCP/IP
  *  @author Etienne
  *  @todo: define & implement protocol
  *  @todo implement handshake, paquet parser & request manager
@@ -65,7 +65,7 @@ class SocketServer
         echo 'Waiting for connections' . "\r\n";
 
         while(true) {
-            // set array of readable client SocketServer
+            // set array of readable client socket
             $read = array();
             // add master socket as first socket in array
             $read[] = $this->socket;
@@ -95,13 +95,13 @@ class SocketServer
                     unset($newClient);
                 } else {
                     // send sorry message and close connection
-                    $message = "Max connections reached, please try later \n";
+                    $message = "Max connections reached, please try again later \n";
                     socket_write($newClient, $message);
                     socket_close($newClient);
                 }
             }
 
-            //check each client if they send any data
+            //check each client for new sent data
             foreach($this->clients as $client) {
                 if (in_array($client, $read)) {
                     $input = socket_read($client, 1024);
@@ -114,7 +114,7 @@ class SocketServer
                     }
 
                     $n = trim($input);
-                    $output = "OK ... $input";
+                    $output = "OK ... $n";
                     echo "Sending output to client \n";
                     echo $output . "\n";
 
