@@ -1,45 +1,26 @@
 <?php
 
-// $host = '51.254.140.189';
-$host = '127.0.0.1';
-$port = '5000';
+use Clue\React\Stdio\Stdio;
 
-echo 'Welcome to ShellChat !' . "\r\n";
-echo 'Enter your message or type :q to quit' . "\r\n";
+require __DIR__ . '/vendor/autoload.php';
 
-//Creation de la socket
-// $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die('Création de socket refusée');
-//Connexion au serveur
-// socket_connect($socket, $host, $port) or die('Connexion impossible');
+$loop = React\EventLoop\Factory::create();
 
-$socket = fsockopen($host, $port, $errno) or die('fail opening socket');
+$stdio = new Stdio($loop);
 
+$stdio->writeln('Will print periodic messages until you submit anything');
 
-$inputStream = fopen('php://stdin', 'r');
-while(true) {
-    $read = array($inputStream, $socket);
-    if(stream_select($read, $write, $exept, 0) > 0) {
-        foreach($read as $input => $source) {
-            if($source == $inputStream) {
-                // exit('user input');
-                fwrite($socket, fgets($inputStream));
-            } else {
-                // exit('server');
-                echo fgets($socket);
-            }
-        }
-    }
-}
+// add some periodic noise
+$timer = $loop->addPeriodicTimer(0.5, function () use ($stdio) {
+    $stdio->writeln(date('Y-m-d H:i:s') . ' hello');
+});
 
+// react to commands the user entered
+$stdio->on('line', function ($line) use ($stdio, $timer) {
+    $stdio->writeln('you just said: ' . $line . ' (' . strlen($line) . ')');
 
+    $timer->cancel();
+    $stdio->end();
+});
 
-
-// //Ecriture du paquet vers le serveur
-// $i = 0;
-// while ($i < 5) {
-//     sleep(2);
-//     $msg = ++$i;
-//     socket_write($socket, $msg, strlen($msg));
-// }
-// socket_close($socket);
-// exit;
+$loop->run();
