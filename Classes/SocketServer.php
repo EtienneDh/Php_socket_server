@@ -87,7 +87,10 @@ class SocketServer
                     $this->clients[] = $newClient;
                     // Log client informations in terminal
                     if(socket_getpeername($newClient, $address, $port)) {
-                        echo "Client $address : $port has joined the session. \n";
+                        $time = date('d-m-y:H:m:s');
+                        echo $time . " Client $address : $port has joined the session. \n";
+                    } else {
+                        echo $time . " Unknown client has joined the session. \n";
                     }
                     //Send Welcome message to client
                     $message = "Welcome to ShellChat \n";
