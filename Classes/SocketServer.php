@@ -73,7 +73,7 @@ class SocketServer
             foreach($this->clients as $client) {
                 $read[] = $client;
             }
-            // call select
+            // call select, non blocking, fire when change of state is observed on read, write or error
             if(socket_select($read, $write, $except, null) === false) {
                 throw new Exception(socket_last_error($this->socket));
             }
@@ -92,6 +92,7 @@ class SocketServer
                     } else {
                         echo $time . " Unknown client has joined the session. \n";
                     }
+                    unset($time);
                     //Send Welcome message to client
                     $message = "Welcome to ShellChat \n";
                     socket_write($newClient, $message);
