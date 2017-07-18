@@ -87,7 +87,7 @@ class SocketServer
                     $this->clients[] = $newClient;
                     // Log client informations in terminal
                     if(socket_getpeername($newClient, $address, $port)) {
-                        $time = date('d-m-y:H:m:s');
+                        $time = date('d-m-y H:m:s');
                         echo $time . " Client $address : $port has joined the session. \n";
                     } else {
                         echo $time . " Unknown client has joined the session. \n";
@@ -110,21 +110,24 @@ class SocketServer
                 if (in_array($client, $read)) {
                     $input = socket_read($client, 1024);
 
+                    //zero length string meaning disconnected, remove and close the socket
                     if ($input == null) {
-                        //zero length string meaning disconnected, remove and close the socket
                         echo 'user logging off' . "\r\n";
                         socket_close($client);
                         unset($client);
                     }
 
-                    $n = trim($input);
-                    $output = "OK ... $n";
+                    $msgSender = $client;
+                    $outputMessage = trim($input);
+                    $outputMessage . " \n";
                     echo "Sending output to client \n";
-                    echo $output . "\n";
+                    echo $outputMessage . "\n";
 
                     //send response to client
                     foreach($this->clients as $client) {
-                        socket_write($client , $output);
+                        if($client != $msgSender) {
+                            socket_write($client , $outputMessage);                            
+                        }
                     }
                 }
             }
