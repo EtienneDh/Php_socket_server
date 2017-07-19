@@ -11,4 +11,4 @@ try {
     echo $e;
 }
 
-$server->listen();
+$server->run();
