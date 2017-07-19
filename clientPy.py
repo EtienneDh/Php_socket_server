@@ -17,10 +17,6 @@ except :
 
 print 'Connected to remote host. You can start sending messages'
 
-
-# sys.stdout.write('[Me] '); sys.stdout.flush()
-# resetInput(True)
-
 while 1:
     socket_list = [sys.stdin, s]
 
@@ -36,22 +32,15 @@ while 1:
                 sys.exit()
             else :
                 #print data
-                # sys.stdout.flush()
-                sys.stdout.write('\n' + '[Other]: ' + data + '\n');sys.stdout.flush()
+                sys.stdout.write('\r' + '[Other]: ' + data + '\n');sys.stdout.flush()
                 sys.stdout.write('>>> ' )
                 sys.stdout.flush()
-
         else :
             # user entered a message
             msg = sys.stdin.readline()
             s.send(msg)
-
-            sys.stdout.write('[Me]: ' + msg)
-
             sys.stdout.write('>>> ' )
             sys.stdout.flush()
-            # sys.stdout.write('[Me] '); sys.stdout.flush()
-
 
 
 if __name__ == "__main__":

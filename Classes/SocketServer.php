@@ -79,7 +79,32 @@ class SocketServer
                 throw new Exception(socket_last_error($this->socket));
             }
 
-            $this->checkForNewConnection($read);
+            // $this->checkForNewConnection($read);
+
+            if(in_array($this->socket, $read)) {
+                $newClient = socket_accept($this->socket);
+                // if server accepts more connections
+                if(count($this->clients < self::MAX_CLIENT)) {
+                    $this->clients[] = $newClient;
+                    // Log client informations in terminal
+                    $time = date('d-m-y H:m:s');
+                    if(socket_getpeername($newClient, $address, $port)) {
+                        echo $time . " Client $address : $port has joined the session. \n";
+                    } else {
+                        echo $time . " Unknown client has joined the session. \n";
+                    }
+                    unset($time);
+                    //Send Welcome message to client
+                    $message = "Welcome to ShellChat \n";
+                    socket_write($newClient, $message);
+                    unset($newClient);
+                } else {
+                    // send sorry message and close connection
+                    $message = "Max connections reached, please try again later \n";
+                    socket_write($newClient, $message);
+                    socket_close($newClient);
+                }
+            }
 
             //check each client for new sent data
             foreach($this->clients as $client) {
@@ -91,6 +116,7 @@ class SocketServer
                         echo 'user logging off' . "\r\n";
                         socket_close($client);
                         unset($client);
+                        continue;
                     }
 
                     $outputMessage = trim($clientMessage);
@@ -115,7 +141,7 @@ class SocketServer
      */
     private function checkForNewConnection($readableSockets)
     {
-        if(in_array($this->socket, $readableSockets)) {
+        if(in_array($this->socket, $read)) {
             $newClient = socket_accept($this->socket);
             // if server accepts more connections
             if(count($this->clients < self::MAX_CLIENT)) {
