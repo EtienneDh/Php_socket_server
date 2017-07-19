@@ -60,6 +60,7 @@ class SocketServer
         if(!socket_listen($this->socket, 10)) {
             throw new Exception(socket_last_error($this->socket));
             echo 'Socket could not be set to listening' . "\r\n";
+            exit;
         }
         echo 'Server is listening !' . "\r\n";
         echo 'Waiting for connections' . "\r\n";
@@ -78,32 +79,7 @@ class SocketServer
                 throw new Exception(socket_last_error($this->socket));
             }
 
-            // check if new incoming connection, this is done by checking
-            // if $read contains the master socket
-            if(in_array($this->socket, $read)) {
-                $newClient = socket_accept($this->socket);
-                // if server accepts more connections
-                if(count($this->clients < self::MAX_CLIENT)) {
-                    $this->clients[] = $newClient;
-                    // Log client informations in terminal
-                    $time = date('d-m-y H:m:s');
-                    if(socket_getpeername($newClient, $address, $port)) {
-                        echo $time . " Client $address : $port has joined the session. \n";
-                    } else {
-                        echo $time . " Unknown client has joined the session. \n";
-                    }
-                    unset($time);
-                    //Send Welcome message to client
-                    $message = "Welcome to ShellChat \n";
-                    socket_write($newClient, $message);
-                    unset($newClient);
-                } else {
-                    // send sorry message and close connection
-                    $message = "Max connections reached, please try again later \n";
-                    socket_write($newClient, $message);
-                    socket_close($newClient);
-                }
-            }
+            $this->checkForNewConnection($read);
 
             //check each client for new sent data
             foreach($this->clients as $client) {
@@ -117,19 +93,50 @@ class SocketServer
                         unset($client);
                     }
 
-                    // $msgSender = $client;
                     $outputMessage = trim($clientMessage);
                     $outputMessage . " \n";
                     echo "Sending output to client \n";
                     echo $outputMessage . "\n";
 
-                    //send response to client
+                    //send response to clients
                     foreach($this->clients as $chatClient) {
                         if($client != $chatClient) {
                             socket_write($chatClient , $outputMessage);
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Check if new incoming connection, this is done by checking
+     * if $read contains the master socket.
+     */
+    private function checkForNewConnection($readableSockets)
+    {
+        if(in_array($this->socket, $readableSockets)) {
+            $newClient = socket_accept($this->socket);
+            // if server accepts more connections
+            if(count($this->clients < self::MAX_CLIENT)) {
+                $this->clients[] = $newClient;
+                // Log client informations in terminal
+                $time = date('d-m-y H:m:s');
+                if(socket_getpeername($newClient, $address, $port)) {
+                    echo $time . " Client $address : $port has joined the session. \n";
+                } else {
+                    echo $time . " Unknown client has joined the session. \n";
+                }
+                unset($time);
+                //Send Welcome message to client
+                $message = "Welcome to ShellChat \n";
+                socket_write($newClient, $message);
+                unset($newClient);
+            } else {
+                // send sorry message and close connection
+                $message = "Max connections reached, please try again later \n";
+                socket_write($newClient, $message);
+                socket_close($newClient);
             }
         }
     }
@@ -141,9 +148,4 @@ class SocketServer
         exit;
     }
 
-
-    public function getSocket()
-    {
-        return $this->socket;
-    }
 }

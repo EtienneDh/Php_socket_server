@@ -2,18 +2,6 @@ import sys
 import socket
 import select
 
-
-def resetInput(user = True):
-    sys.stdout.write('\n')
-    sys.stdout.write('\n')
-    sys.stdout.write('\n')
-    if user is True:
-        sys.stdout.write('[Me] ')
-    else:
-        sys.stdout.write('[Other] ')
-    sys.stdout.flush()
-    return
-
 # connect to remote host
 host = "127.0.0.1"
 port = 5000
@@ -31,7 +19,7 @@ print 'Connected to remote host. You can start sending messages'
 
 
 # sys.stdout.write('[Me] '); sys.stdout.flush()
-resetInput(True)
+# resetInput(True)
 
 while 1:
     socket_list = [sys.stdin, s]
@@ -48,14 +36,21 @@ while 1:
                 sys.exit()
             else :
                 #print data
-                sys.stdout.write(data);
-                resetInput(False)
+                # sys.stdout.flush()
+                sys.stdout.write('\n' + '[Other]: ' + data + '\n');sys.stdout.flush()
+                sys.stdout.write('>>> ' )
+                sys.stdout.flush()
 
         else :
             # user entered a message
             msg = sys.stdin.readline()
             s.send(msg)
-            resetInput(True)
+
+            sys.stdout.write('[Me]: ' + msg)
+
+            sys.stdout.write('>>> ' )
+            sys.stdout.flush()
+            # sys.stdout.write('[Me] '); sys.stdout.flush()
 
 
 
