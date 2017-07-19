@@ -15,7 +15,11 @@ except :
     print 'Unable to connect'
     sys.exit()
 
-print 'Connected to remote host. You can start sending messages'
+print 'Connected to remote host \n'
+
+# Get user pseudo
+pseudo = raw_input('Enter a user name: \n')
+s.send(pseudo)
 
 while 1:
     socket_list = [sys.stdin, s]

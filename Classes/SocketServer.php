@@ -79,59 +79,36 @@ class SocketServer
                 throw new Exception(socket_last_error($this->socket));
             }
 
-            // $this->checkForNewConnection($read);
+            $this->checkForNewConnection($read);
 
-            if(in_array($this->socket, $read)) {
-                $newClient = socket_accept($this->socket);
-                // if server accepts more connections
-                if(count($this->clients < self::MAX_CLIENT)) {
-                    $this->clients[] = $newClient;
-                    // Log client informations in terminal
-                    $time = date('d-m-y H:m:s');
-                    if(socket_getpeername($newClient, $address, $port)) {
-                        echo $time . " Client $address : $port has joined the session. \n";
-                    } else {
-                        echo $time . " Unknown client has joined the session. \n";
-                    }
-                    unset($time);
-                    //Send Welcome message to client
-                    $message = "Welcome to ShellChat \n";
-                    socket_write($newClient, $message);
-                    unset($newClient);
-                } else {
-                    // send sorry message and close connection
-                    $message = "Max connections reached, please try again later \n";
-                    socket_write($newClient, $message);
-                    socket_close($newClient);
-                }
-            }
+            $this->sendUserMessages($read);
 
-            //check each client for new sent data
-            foreach($this->clients as $client) {
-                if (in_array($client, $read)) {
-                    $clientMessage = socket_read($client, 1024);
-
-                    //zero length string meaning disconnected, remove and close the socket
-                    if ($clientMessage == null) {
-                        echo 'user logging off' . "\r\n";
-                        socket_close($client);
-                        unset($client);
-                        continue;
-                    }
-
-                    $outputMessage = trim($clientMessage);
-                    $outputMessage . " \n";
-                    echo "Sending output to client \n";
-                    echo $outputMessage . "\n";
-
-                    //send response to clients
-                    foreach($this->clients as $chatClient) {
-                        if($client != $chatClient) {
-                            socket_write($chatClient , $outputMessage);
-                        }
-                    }
-                }
-            }
+            // //check each client for new sent data
+            // foreach($this->clients as $client) {
+            //     if (in_array($client, $read)) {
+            //         $clientMessage = socket_read($client, 1024);
+            //
+            //         //zero length string meaning disconnected, remove and close the socket
+            //         if ($clientMessage == null) {
+            //             echo 'user logging off' . "\r\n";
+            //             socket_close($client);
+            //             unset($client);
+            //             continue;
+            //         }
+            //
+            //         $outputMessage = trim($clientMessage);
+            //         $outputMessage . " \n";
+            //         echo "Sending output to client \n";
+            //         echo $outputMessage . "\n";
+            //
+            //         //send response to clients
+            //         foreach($this->clients as $chatClient) {
+            //             if($client != $chatClient) {
+            //                 socket_write($chatClient , $outputMessage);
+            //             }
+            //         }
+            //     }
+            // }
         }
     }
 
@@ -141,7 +118,7 @@ class SocketServer
      */
     private function checkForNewConnection($readableSockets)
     {
-        if(in_array($this->socket, $read)) {
+        if(in_array($this->socket, $readableSockets)) {
             $newClient = socket_accept($this->socket);
             // if server accepts more connections
             if(count($this->clients < self::MAX_CLIENT)) {
@@ -163,6 +140,36 @@ class SocketServer
                 $message = "Max connections reached, please try again later \n";
                 socket_write($newClient, $message);
                 socket_close($newClient);
+            }
+        }
+    }
+
+    private function sendUserMessages($readableSockets)
+    {
+        //check each client for new sent data
+        foreach($this->clients as $client) {
+            if (in_array($client, $readableSockets)) {
+                $clientMessage = socket_read($client, 1024);
+
+                //zero length string meaning disconnected, remove and close the socket
+                if ($clientMessage == null) {
+                    echo 'user logging off' . "\r\n";
+                    socket_close($client);
+                    unset($client);
+                    continue;
+                }
+
+                $outputMessage = trim($clientMessage);
+                $outputMessage . " \n";
+                echo "Sending output to client \n";
+                echo $outputMessage . "\n";
+
+                //send response to clients
+                foreach($this->clients as $chatClient) {
+                    if($client != $chatClient) {
+                        socket_write($chatClient , $outputMessage);
+                    }
+                }
             }
         }
     }
