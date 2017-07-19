@@ -86,8 +86,8 @@ class SocketServer
                 if(count($this->clients < self::MAX_CLIENT)) {
                     $this->clients[] = $newClient;
                     // Log client informations in terminal
+                    $time = date('d-m-y H:m:s');
                     if(socket_getpeername($newClient, $address, $port)) {
-                        $time = date('d-m-y H:m:s');
                         echo $time . " Client $address : $port has joined the session. \n";
                     } else {
                         echo $time . " Unknown client has joined the session. \n";
@@ -108,25 +108,25 @@ class SocketServer
             //check each client for new sent data
             foreach($this->clients as $client) {
                 if (in_array($client, $read)) {
-                    $input = socket_read($client, 1024);
+                    $clientMessage = socket_read($client, 1024);
 
                     //zero length string meaning disconnected, remove and close the socket
-                    if ($input == null) {
+                    if ($clientMessage == null) {
                         echo 'user logging off' . "\r\n";
                         socket_close($client);
                         unset($client);
                     }
 
-                    $msgSender = $client;
-                    $outputMessage = trim($input);
+                    // $msgSender = $client;
+                    $outputMessage = trim($clientMessage);
                     $outputMessage . " \n";
                     echo "Sending output to client \n";
                     echo $outputMessage . "\n";
 
                     //send response to client
-                    foreach($this->clients as $client) {
-                        if($client != $msgSender) {
-                            socket_write($client , $outputMessage);                            
+                    foreach($this->clients as $chatClient) {
+                        if($client != $chatClient) {
+                            socket_write($chatClient , $outputMessage);
                         }
                     }
                 }
