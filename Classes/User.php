@@ -9,7 +9,7 @@ class User
 
     public function __construct($ip, $port)
     {
-        $this->setIp($port)->setPort($ip);
+        $this->setIp($ip)->setPort($port);
     }
 
     public function setPseudo($pseudo)
@@ -37,7 +37,7 @@ class User
 
     public function getIp()
     {
-        return $this->Ip;
+        return $this->ip;
     }
 
     public function getPort($port)
