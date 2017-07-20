@@ -41,7 +41,7 @@ class UserManager
     private function addUser($user)
     {
         $this->userCollection[] = $user;
-        echo "added user \n";
+        // echo "added user \n";
         var_dump($this->userCollection);
     }
 
@@ -66,7 +66,8 @@ class UserManager
         $user = $this->getUserByIpAndPort($address, $port);
         if(null !== $user) {
             echo $user->getPseudo() . "\n";
-            if($user->getPseudo() !== '') {
+            if($user->getPseudo() == '' || null === $user->getPseudo()) {
+                echo "setting new pseudo \n";
                 $user->setPseudo($clientMessage);
                 echo " pseudo: " . $user->getPseudo() . "\n";
                 $this->registerUser($clientMessage, $address, $port);

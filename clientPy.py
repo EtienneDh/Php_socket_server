@@ -36,7 +36,7 @@ while 1:
                 sys.exit()
             else :
                 #print data
-                sys.stdout.write('\r' + '[Other]: ' + data + '\n');sys.stdout.flush()
+                sys.stdout.write('\r' + data + '\n');sys.stdout.flush()
                 sys.stdout.write('>>> ' )
                 sys.stdout.flush()
         else :
