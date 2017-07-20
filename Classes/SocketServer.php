@@ -40,7 +40,6 @@ class SocketServer
 
         // Create TCP IP socket
         $this->createSocket();
-
         // Bind socket to the port
         $this->bindSocket();
     }
@@ -129,7 +128,7 @@ class SocketServer
             if(count($this->clients < self::MAX_CLIENT)) {
                 $time = date('d-m-y H:m:s');
 
-                // Only accept connection if IP can be obtained
+                // Only accept connection if IP & port can be obtained
                 if(socket_getpeername($newClient, $address, $port)) {
                     $this->clients[] = $newClient;
                     // Log client informations in terminal
@@ -140,7 +139,7 @@ class SocketServer
                     $message = "Welcome to ShellChat \n";
                 } else {
                     echo $time . " Unknown client tried to join the session. \n";
-                    $message = "Your IP cannot be obtained, closing connection. \n";
+                    $message = "Your IP or Port cannot be obtained, closing connection. \n";
                     $closeSocket = true;
                 }
             } else {
@@ -179,10 +178,11 @@ class SocketServer
                 socket_getpeername($client, $address, $port);
                 if(!is_null($address) && !is_null($port)) {
                     $this->userManager->updateUser($clientMessage, $address, $port);
+                    $userPseudo = $this->userManager->getCurrentUserPseudo($address, $port);
                 }
 
 
-                $outputMessage = trim($clientMessage);
+                $outputMessage = "[${userPseudo}]: " . trim($clientMessage);
                 $outputMessage . " \n";
                 echo "Sending output to client \n";
                 echo $outputMessage . "\n";
