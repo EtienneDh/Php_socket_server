@@ -136,7 +136,10 @@ class SocketServer
                     // create new User
                     $this->userManager->createUser($address, $port);
                     // Prepare welcome message to client
+                    $count = $this->userManager->getUserCount();
                     $message = "Welcome to ShellChat \n";
+                    $message .= "There are $count users logged in \n";
+                    unset($count);
                 } else {
                     echo $time . " Unknown client tried to join the session. \n";
                     $message = "Your IP or Port cannot be obtained, closing connection. \n";

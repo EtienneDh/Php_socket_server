@@ -1,4 +1,5 @@
 import sys
+import os
 import socket
 import select
 
@@ -8,6 +9,9 @@ port = 5000
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout(2)
+
+# clear screen
+os.system('cls' if os.name == 'nt' else 'clear')
 
 try :
     s.connect((host, port))
@@ -23,7 +27,6 @@ s.send(pseudo)
 
 while 1:
     socket_list = [sys.stdin, s]
-
     # Get the list sockets which are readable
     ready_to_read,ready_to_write,in_error = select.select(socket_list , [], [])
 

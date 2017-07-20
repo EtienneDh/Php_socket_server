@@ -79,6 +79,11 @@ class UserManager
         }
     }
 
+    public function getUserCount()
+    {
+        return count($this->pseudoAddressTable);
+    }
+
     private function getUserByIpAndPort($ip, $port)
     {
         foreach($this->userCollection as $user) {
