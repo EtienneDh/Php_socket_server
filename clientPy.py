@@ -3,7 +3,7 @@ import socket
 import select
 
 # connect to remote host
-host = "127.0.0.1"
+host = "51.254.140.189"
 port = 5000
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
