@@ -1,7 +1,7 @@
 <?php
 
 /**
- *  Run a server on UDP protocol to easily deal with multiples connections
+ *  Run a server on TCP protocol to easily deal with multiples connections
  *  @author Etienne
  *  @todo: define & implement protocol
  *  @todo implement handshake, paquet parser & request manager
