@@ -1,1 +1,1 @@
-# PHP UDP Socket Server
+# PHP TCP Socket Server
